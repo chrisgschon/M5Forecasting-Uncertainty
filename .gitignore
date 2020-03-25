@@ -1,0 +1,22 @@
+#env/creds
+*.env
+creds.py
+credentials.json
+token.pickle
+
+# datafile types
+*.log
+*.csv
+*.xlsx
+*.html
+.DS_Store
+data/
+
+# jupyter
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+#other
+TODO.md
+.vscode
