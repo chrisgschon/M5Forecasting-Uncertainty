@@ -9,6 +9,7 @@ token.pickle
 *.csv
 *.xlsx
 *.html
+*.db
 .DS_Store
 data/
 
