@@ -3,6 +3,12 @@
 import sqlite3
 conn = sqlite3.connect('bosh.db')
 c = conn.cursor()
+
+#Dirs
+import os
+cwd = os.getcwd()
+datadir = cwd + '/data/raw/'
+
 ## Create tables
 c.execute('''CREATE TABLE IF NOT EXISTS stores
             (store_id INTEGER PRIMARY KEY,
@@ -93,7 +99,7 @@ if(not is_empty_table(c, "sales")) :
 
 import pandas as pd
 ## Fill Tables
-sales_data = pd.read_csv("data/sell_prices.csv")
+sales_data = pd.read_csv(f"{datadir}/sell_prices.csv")
 ## Fill stores
 stores = pd.Series(data = sales_data.store_id.unique(), name = 'store_name')
 if(is_empty_table(c, "stores")) :
@@ -105,7 +111,7 @@ if(is_empty_table(c, "items")) :
     items.to_sql('items', conn, if_exists = 'append', index_label = 'item_id')
 
 ## Fill weeks
-calendar_data = pd.read_csv("data/calendar.csv")
+calendar_data = pd.read_csv(f"{datadir}/calendar.csv")
 weeks = pd.Series(data = calendar_data.wm_yr_wk.unique(), name = 'week_name')
 if(is_empty_table(c, "weeks")) :
     weeks.to_sql('weeks', conn, if_exists = 'append', index_label = 'week_id')
@@ -160,7 +166,7 @@ if(is_empty_table(c, "sale_prices")) :
     sales_prices.to_sql('sale_prices', conn, if_exists = 'append', index_label = 'sale_price_id')
 
 ## Fill Departments
-sales_train_validation = pd.read_csv("/Users/jpcryne/Documents/BoshCapital/Kaggle/M5Forecasting-Uncertainty/data/sales_train_validation.csv")
+sales_train_validation = pd.read_csv(f"{datadir}/sales_train_validation.csv")
 departments = pd.Series(data = sales_train_validation.dept_id.unique(), name = 'department_name')
 
 if(is_empty_table(c, "departments")) :
