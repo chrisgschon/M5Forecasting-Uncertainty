@@ -216,5 +216,13 @@ for i in range(len(day_columns)) :
     sales_tmp['date_id'] = [date_lookup.loc[current_day]]*sales.shape[0]
     sales_tmp['sales_count'] = sales_train_validation[current_day].tolist()
     sales_tmp.to_sql('sales', conn, if_exists = 'append', index = False)
+
+c.execute("""
+create index sales_item_id_store_id_date_id_index
+	on sales (item_id, store_id, date_id);
+
+create unique index sales_sale_id_uindex
+	on sales (sale_id);"""
+    )
 print("HELLO BOSH")
 conn.close()
