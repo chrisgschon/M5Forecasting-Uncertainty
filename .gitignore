@@ -11,6 +11,7 @@ token.pickle
 *.html
 *.db
 *.pdf
+*.rds
 .DS_Store
 data/
 
