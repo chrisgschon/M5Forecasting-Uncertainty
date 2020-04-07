@@ -317,3 +317,59 @@ write.csv(map_table, "submission_ts_map.csv", row.names = F)
 ## loop through the index groups, loop through their indices, set the key in first run,
 ## use data.table to get array out, find rows that have the same array as that row further down
 ## set Matrix rows to that array
+
+## Try put it in database
+
+drv <- dbDriver("SQLite")
+con <- dbConnect(drv, dbname = "bosh.db", host = "localhost", user = "jpcryne")
+
+create_ts_table <- dbExecute(con, "CREATE TABLE IF NOT EXISTS time_series(
+                             time_series_id INTEGER,
+                              Y REAL,
+                              date_id INTEGER NOT NULL,
+                              FOREIGN KEY(date_id) REFERENCES dates(date_id)
+                              )")
+create_submission_tables <- dbExecute(con, "CREATE TABLE IF NOT EXISTS submission_data(
+                                      submission_data_id INTEGER PRIMARY KEY,
+                                      row_id INTEGER NOT NULL,
+                                      item_id INTEGER,
+                                      category_id INTEGER,
+                                      department_id INTEGER,
+                                      state_id INTEGER,
+                                      store_id INTEGER,
+                                      validation INTEGER NOT NULL,
+                                      interval REAL NOT NULL,
+                                      FOREIGN KEY(item_id) REFERENCES items(item_id),
+                                      FOREIGN KEY(category_id) REFERENCES categories(category_id),
+                                      FOREIGN KEY(department_id) REFERENCES departments(department_id),
+                                      FOREIGN KEY(state_id) REFERENCES states(state_id)
+                                      FOREIGN KEY(store_id) REFERENCES store(store_id))")
+
+create_map_table <- dbExecute(con, "CREATE TABLE IF NOT EXISTS ts_submission_map(
+                              time_series_id INTEGER NOT NULL,
+                              submission_row_id INTEGER NOT NULL,
+                              FOREIGN KEY(time_series_id) REFERENCES time_series(time_series_id),
+                              FOREIGN KEY(submission_row_id) REFERENCES submission_data(row_id))")
+
+date_table <- dbGetQuery(con, "SELECT day_name, date_id FROM dates")
+
+library(pracma)
+tmp <- finalMatrix[,-1]
+ts_table <- data.frame(time_series_id = rep(unique(finalMatrix[,1]), each = ncol(finalMatrix)-1), 
+           Y = as.matrix(Reshape(t(tmp), length(tmp), 1)),
+           day_name = rep(c(sapply(1:(dim(finalMatrix)[2]-1), function(I) paste0("d_",I))), nrow(finalMatrix)))
+ts_table <- ts_table %>% inner_join(date_table, by = c("day_name"="day_name"))
+ts_table <- ts_table %>% dplyr::select(-day_name)
+
+dbWriteTable(con, "time_series", ts_table, append = T)
+dbWriteTable(con, "submission_data", row_types_final %>% dplyr::select(-full_name), append = T)
+dbWriteTable(con, "ts_submission_map", map_table %>% rename(time_series_id = all_ts_row_id), append = T)
+
+dbExecute(con, "CREATE INDEX time_series_index ON time_series(time_series_id)")
+
+dbDisconnect(con)
+
+
+## Create tables in database that hold every time series required by submission data, 
+## with map between the submission data and the time series
+## also holds information about the submission data rows
