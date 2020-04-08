@@ -26,7 +26,7 @@ row_types$first_id <- as.character(sapply(row_types$full_name, function(I) strsp
 second_id_lists <- strsplit(row_types$partial_name, paste0(row_types$first_id, "_"))
 row_types$second_id <- sapply(second_id_lists, function(I) I[length(I)])
 
-row_types_final <- row_types %>% 
+row_types_final <- row_types %>%
   left_join(items, by = c("first_id"="item_name")) %>%
   left_join(items, by = c("second_id"="item_name")) %>%
   mutate(item_id = coalesce(item_id.x, item_id.y)) %>%
@@ -103,38 +103,38 @@ index_key_set <- list(
   "cat_not_na"="setkey(DT,category_id)","cat_sta_not_na"="setkey(DT,category_id,state_id)",
   "cat_sto_not_na"="setkey(DT, category_id, store_id)","dep_not_na"="setkey(DT, department_id)",
   "dep_sta_not_na"="setkey(DT,department_id,state_id)","dep_sto_not_na"="setkey(DT,department_id, store_id)",
-  "sta_not_na"="setkey(DT,state_id)","sto_not_na"="setkey(DT,store_id)" 
+  "sta_not_na"="setkey(DT,state_id)","sto_not_na"="setkey(DT,store_id)"
 )
 i_sto_not_na_1 = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                         function(I) all(!is.na(I[c("item_id","store_id")])) & all(is.na(I[c("category_id","department_id","state_id")])))))
 i_sto_not_na_2 = i_sto_not_na_1[1:floor(length(i_sto_not_na_1) / 2)]
 i_sto_not_na_1 = i_sto_not_na_1[(1+floor(length(i_sto_not_na_1) / 2)):length(i_sto_not_na_1)]
 index_groups <- list(
-  "none_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "none_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                          function(I) all(is.na(I[c("item_id","category_id","department_id","state_id","store_id")]))))),
-  "i_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "i_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                       function(I) all(!is.na(I["item_id"])) & all(is.na(I[c("category_id","department_id","state_id","store_id")]))))),
-  "i_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "i_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                           function(I) all(!is.na(I[c("item_id","state_id")])) & all(is.na(I[c("category_id","department_id","store_id")]))))),
-  # "i_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  # "i_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
   #                                        function(I) all(!is.na(I[c("item_id","store_id")])) & all(is.na(I[c("category_id","department_id","state_id")]))))),
   "i_sto_not_na_1" = i_sto_not_na_1,
   "i_sto_not_na_2" = i_sto_not_na_2,
-  "cat_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "cat_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                         function(I) all(!is.na(I["category_id"])) & all(is.na(I[c("item_id","department_id","state_id","store_id")]))))),
-  "cat_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "cat_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                             function(I) all(!is.na(I[c("category_id","state_id")])) & all(is.na(I[c("item_id","department_id","store_id")]))))),
-  "cat_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "cat_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                             function(I) all(!is.na(I[c("category_id","store_id")])) & all(is.na(I[c("item_id","department_id","state_id")]))))),
-  "dep_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "dep_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                         function(I) all(!is.na(I["department_id"])) & all(is.na(I[c("item_id","category_id","state_id","store_id")]))))),
-  "dep_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "dep_sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                             function(I) all(!is.na(I[c("department_id","state_id")])) & all(is.na(I[c("item_id","category_id","store_id")]))))),
-  "dep_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "dep_sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                             function(I) all(!is.na(I[c("department_id","store_id")])) & all(is.na(I[c("item_id","category_id","state_id")]))))),
-  "sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "sta_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                         function(I) all(!is.na(I["state_id"])) & all(is.na(I[c("item_id","category_id","department_id","store_id")]))))),
-  "sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1, 
+  "sto_not_na" = as.numeric(which(apply(row_types_for_calculation, MARGIN = 1,
                                         function(I) all(!is.na(I["store_id"])) & all(is.na(I[c("item_id","category_id","department_id","state_id")])))))
 )
 ## Returns all rows that are same as the provided row, including the provided row
@@ -174,7 +174,7 @@ functionThatDoesSomething <- function(iteration, ig, all_row_match_data, row_typ
                      "sta_not_na" = DT[state_id == row_data$state_id, .(sum(sales_count)), by = date_id][order(date_id)][,V1],
                      "sto_not_na" = DT[store_id == row_data$store_id, .(sum(sales_count)), by = date_id][order(date_id)][,V1]
   )
-  
+
   row_match_data = row_data[,c("item_id","category_id","department_id","state_id","store_id")]
   row_match_data[is.na(row_match_data)] <- -1
   matched_row_indices <- find_matching_row2(row_match_data, all_row_match_data)
@@ -205,13 +205,13 @@ for(ig in index_group_names) {
     tempMatrix #Equivalent to finalMatrix = rbind(finalMatrix, tempMatrix)
   }
   print(Sys.time() - start_time)
-  
+
   if(ig == "none_not_na") {
     finalMatrix <- combinedMatrix
   } else {
     finalMatrix <- rbind(finalMatrix, combinedMatrix)
   }
-  
+
   # start_time = Sys.time()
   # for(i in 1:1000){#length(rows_for_loop)) {
   #   tempMatrix = functionThatDoesSomething(i, ig, all_row_match_data, row_types_for_calculation, DT, rows_for_loop) #calling a function
@@ -253,7 +253,7 @@ for(ig in index_group_names) {
   #                      "sta_not_na" = DT[state_id == row_data$state_id, .(sum(sales_count)), by = date_id][order(date_id)][,V1],
   #                      "sto_not_na" = DT[store_id == row_data$store_id, .(sum(sales_count)), by = date_id][order(date_id)][,V1]
   #   )
-  #   
+  #
   #   #start<- Sys.time()
   #   row_match_data = row_data[,c("item_id","category_id","department_id","state_id","store_id")]
   #   row_match_data[is.na(row_match_data)] <- -1
@@ -276,7 +276,7 @@ combineMatchingRows <- function(i, row_types_for_calculation) {
   row_match_data = row_data[,c("item_id","category_id","department_id","state_id","store_id")]
   row_match_data[is.na(row_match_data)] <- -1
   matched_row_indices <- find_matching_row2(row_match_data, all_row_match_data)
-  return(data.frame(submission_row_id = matched_row_indices, 
+  return(data.frame(submission_row_id = matched_row_indices,
                     all_ts_row_id = rep(matched_row_indices[1], length(matched_row_indices))))
 }
 
@@ -302,10 +302,10 @@ stopCluster(cl)
 #   row_match_data[is.na(row_match_data)] <- -1
 #   matched_row_indices <- find_matching_row2(row_match_data, all_row_match_data)
 #   if(is.null(map_table)) {
-#     map_table <- data.frame(submission_row_number = matched_row_indices, 
+#     map_table <- data.frame(submission_row_number = matched_row_indices,
 #                             submission_formatted_data_row = rep(matched_row_indices[1], length(matched_row_indices)))
 #   } else {
-#     map_table <- rbind(map_table, data.frame(submission_row_number = matched_row_indices, 
+#     map_table <- rbind(map_table, data.frame(submission_row_number = matched_row_indices,
 #                                              submission_formatted_data_row = rep(matched_row_indices[1], length(matched_row_indices))))
 #   }
 # }
@@ -317,3 +317,59 @@ write.csv(map_table, "submission_ts_map.csv", row.names = F)
 ## loop through the index groups, loop through their indices, set the key in first run,
 ## use data.table to get array out, find rows that have the same array as that row further down
 ## set Matrix rows to that array
+
+## Try put it in database
+
+drv <- dbDriver("SQLite")
+con <- dbConnect(drv, dbname = "bosh.db", host = "localhost", user = "jpcryne")
+
+create_ts_table <- dbExecute(con, "CREATE TABLE IF NOT EXISTS time_series(
+                             time_series_id INTEGER,
+                              Y REAL,
+                              date_id INTEGER NOT NULL,
+                              FOREIGN KEY(date_id) REFERENCES dates(date_id)
+                              )")
+create_submission_tables <- dbExecute(con, "CREATE TABLE IF NOT EXISTS submission_data(
+                                      submission_data_id INTEGER PRIMARY KEY,
+                                      row_id INTEGER NOT NULL,
+                                      item_id INTEGER,
+                                      category_id INTEGER,
+                                      department_id INTEGER,
+                                      state_id INTEGER,
+                                      store_id INTEGER,
+                                      validation INTEGER NOT NULL,
+                                      interval REAL NOT NULL,
+                                      FOREIGN KEY(item_id) REFERENCES items(item_id),
+                                      FOREIGN KEY(category_id) REFERENCES categories(category_id),
+                                      FOREIGN KEY(department_id) REFERENCES departments(department_id),
+                                      FOREIGN KEY(state_id) REFERENCES states(state_id)
+                                      FOREIGN KEY(store_id) REFERENCES store(store_id))")
+
+create_map_table <- dbExecute(con, "CREATE TABLE IF NOT EXISTS ts_submission_map(
+                              time_series_id INTEGER NOT NULL,
+                              submission_row_id INTEGER NOT NULL,
+                              FOREIGN KEY(time_series_id) REFERENCES time_series(time_series_id),
+                              FOREIGN KEY(submission_row_id) REFERENCES submission_data(row_id))")
+
+date_table <- dbGetQuery(con, "SELECT day_name, date_id FROM dates")
+
+library(pracma)
+tmp <- finalMatrix[,-1]
+ts_table <- data.frame(time_series_id = rep(unique(finalMatrix[,1]), each = ncol(finalMatrix)-1),
+           Y = as.matrix(Reshape(t(tmp), length(tmp), 1)),
+           day_name = rep(c(sapply(1:(dim(finalMatrix)[2]-1), function(I) paste0("d_",I))), nrow(finalMatrix)))
+ts_table <- ts_table %>% inner_join(date_table, by = c("day_name"="day_name"))
+ts_table <- ts_table %>% dplyr::select(-day_name)
+
+dbWriteTable(con, "time_series", ts_table, append = T)
+dbWriteTable(con, "submission_data", row_types_final %>% dplyr::select(-full_name), append = T)
+dbWriteTable(con, "ts_submission_map", map_table %>% rename(time_series_id = all_ts_row_id), append = T)
+
+dbExecute(con, "CREATE INDEX time_series_index ON time_series(time_series_id)")
+
+dbDisconnect(con)
+
+
+## Create tables in database that hold every time series required by submission data,
+## with map between the submission data and the time series
+## also holds information about the submission data rows
