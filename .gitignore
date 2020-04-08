@@ -3,6 +3,7 @@
 creds.py
 credentials.json
 token.pickle
+*.docx
 
 # datafile types
 *.log
