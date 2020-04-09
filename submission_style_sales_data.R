@@ -284,7 +284,7 @@ cl <- makeCluster(2)#cores[1]-1) #not to overload your computer
 registerDoParallel(cl)
 
 start <- Sys.time()
-map_table <- foreach(i=finalMatrix[,1], .combine=rbind, .inorder = F, .export = c("find_matching_row2", "row_types_for_calculation"), .noexport = ls()) %dopar% {
+map_table <- foreach(i=finalMatrix[,1], .combine=rbind, .inorder = F, .export = c("find_matching_row2", "row_types_for_calculation", "combineMatchingRows", "all_row_match_data"), .noexport = ls()) %dopar% {
   combineMatchingRows(i, row_types_for_calculation)
 }
 print(Sys.time()-start)
