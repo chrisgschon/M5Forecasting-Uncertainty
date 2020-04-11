@@ -3,7 +3,7 @@ library(DBI)
 library(RSQLite)
 library(dplyr)
 ## 2nd Attempt
-setwd("/Users/jpcryne/Documents/BoshCapital/Kaggle/M5Forecasting-Uncertainty")
+setwd("~/git/M5Forecasting-Uncertainty")
 drv <- dbDriver("SQLite")
 con <- dbConnect(drv, dbname = "bosh.db", host = "localhost", user = "jpcryne")
 
@@ -15,7 +15,7 @@ stores <- dbGetQuery(con, "SELECT * FROM stores")
 
 dbDisconnect(con)
 
-submission_sample <- read.csv("data/sample_submission.csv")
+submission_sample <- read.csv("data/raw/sample_submission.csv")
 row_types <- data.frame(full_name = as.character(submission_sample$id), stringsAsFactors = F) %>%
   mutate(row_id = row_number())
 row_types$partial_name <- sapply(row_types$full_name, function(I) strsplit(I, "_[0].[0-9]+_(evaluation|validation)")[[1]][1])

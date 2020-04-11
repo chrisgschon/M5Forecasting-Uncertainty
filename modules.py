@@ -3,11 +3,8 @@ import pandas as pd
 from tqdm import tqdm
 import sqlite3
 from statsmodels.tsa.arima_model import ARIMA
-import matplotlib.pyplot as plt
-%matplotlib inline
 import seaborn as sns
 from fbprophet import Prophet
-pd.set_option('display.max_rows', 500)
 
 quantiles_list = [0.005, 0.025, 0.165, 0.25, 0.5, 0.75, 0.835, 0.975, 0.995]
 
