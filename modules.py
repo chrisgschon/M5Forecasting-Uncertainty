@@ -3,14 +3,58 @@ import pandas as pd
 from tqdm import tqdm
 import sqlite3
 from statsmodels.tsa.arima_model import ARIMA
+import matplotlib.pyplot as plt
 import seaborn as sns
 from fbprophet import Prophet
 
+
 quantiles_list = [0.005, 0.025, 0.165, 0.25, 0.5, 0.75, 0.835, 0.975, 0.995]
+
+sales_cols = ['sale_id', 'sale_name', 'item_id', 'department_id',
+              'category_id', 'store_id', 'state_id', 'date_id']
 
 def wpl(y_true, y_pred, tau):
     err = y_true - y_pred
     return np.mean(np.max((tau * err, (tau-1) * err), axis = 0))
+
+class DataLoader:
+    def __init__(self):
+        self.con = sqlite3.connect('bosh.db')
+        self.c = self.con.cursor()
+        
+    def load_lookups(self):
+        global dates
+        dates = pd.read_sql('select * from dates', con = self.con).set_index('date_id')
+        global holidays
+        holidays = pd.read_sql('select * from holidays', con = self.con)
+        
+    def load_sales_df(self,conditions):
+        cols = conditions.get('filters') #dict
+        groups = conditions.get('groups') #list
+        extra_cols = ['ds', 'date_name']
+        filter_me = "where " + " and ".join([f"{k} == {c}" for k,c in cols.items()]) if cols else ""
+        sql = f"select * from sales {filter_me}"
+        sales_df = pd.read_sql(sql, con = self.con)
+        prices_sql = f"select * from sale_prices {filter_me}"
+        prices = pd.read_sql(prices_sql, con = self.con)
+        sales_df = sales_df.merge(dates[['date_name', 'week_id']], left_on = 'date_id', right_index = True).reset_index()
+        sales_df = sales_df.merge(prices[['item_id', 'store_id', 'week_id','sell_price']], left_on = ['item_id', 'store_id', 'week_id'], right_on = ['item_id', 'store_id', 'week_id']).reset_index()
+        sales_df['date_name'] = sales_df['date_name'].map(lambda x: pd.to_datetime(x))
+        sales_df['ds'] = sales_df['date_name']
+        sales_df['log1plusy'] = sales_df['sales_count'].apply(lambda x: np.log(1+x))
+        if groups:
+            out_cols = extra_cols + ['sales_count', 'log1plusy']
+            sales_df = sales_df.groupby(extra_cols + groups).sum().reset_index()[out_cols]
+        return(sales_df)
+                
+    def do_grouping(self, *groups):
+        non_group_cols = [c for c in sales_cols if c not in groups]
+        group_me = ",".join(groups)
+        select_me = group_me + ", sum(sales_count) as sales_count"
+        filter_me = "where" + " and ".join([f"{k} == {c}" for k,c in t.items()])
+        sql = f"select {select_me} from sales group by {group_me}"
+        grouped_df = pd.read_sql(sql, con = self.con)
+        return(grouped_df)
 
 class EQModel:
     def __init__(self, x):
@@ -35,7 +79,7 @@ class Series:
         self.valcol = valcol
         self.tseries = pd.Series(df[valcol]).rename('xt')
         self.tseries_normed = (df[valcol] - df[valcol].mean())/df[valcol].std()
-        self.logtseries = np.log(2+df[valcol])
+        self.logtseries = np.log(1+df[valcol])
         self.length = len(df[valcol])
         self.description = df[valcol].describe()
         
@@ -60,7 +104,7 @@ class Series:
         
     def plot_acf(self, lags = [0,365], **subplkwargs):
         fig, ax = plt.subplots(**subplkwargs)
-        autocorrelation_plot(sales[self.valcol], ax = ax)
+        pd.plotting.autocorrelation_plot(self.tseries, ax = ax)
         ax.set_xlim(lags)
         
     def model_eq(self):
@@ -87,11 +131,15 @@ class Series:
     
     def fit_Prophet(self, ds, y, **params):
         country_hols = params.pop('add_country_holidays')
+        regressors = params.pop('regressors') if 'regressors' in params else None
         model = Prophet(**params)
         self.df['y'] = self.df[y]
         self.df['ds'] = self.df[ds]
         if country_hols:
             model.add_country_holidays(country_name=country_hols)
+        if regressors:
+            for r in regressors:
+                model.add_regressor(r)
         model.fit(self.df)
         return(model)
     
