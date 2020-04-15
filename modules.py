@@ -75,6 +75,8 @@ class EQModel:
 class Series:
     def __init__(self, df, valcol):
         self.df = df
+        self.dftr = df.iloc[:-28]
+        self.dfte = df.iloc[-28:]
         self.columns = list(df.columns)
         self.valcol = valcol
         self.tseries = pd.Series(df[valcol]).rename('xt')
@@ -82,6 +84,8 @@ class Series:
         self.logtseries = np.log(1+df[valcol])
         self.length = len(df[valcol])
         self.description = df[valcol].describe()
+        self.tstrain = df[valcol][:-28].rename('xt')
+        self.tstest = df[valcol][-28:].rename('xt')
         
     def plot_series(self, idx_range, **subplkwargs):
         plot_range = idx_range
@@ -129,18 +133,20 @@ class Series:
         self.forecast_conf_int = forecast_conf_int
         return(forecast, forecast_stderr, forecast_conf_int)
     
-    def fit_Prophet(self, ds, y, **params):
+    def fit_Prophet(self, ds, y, split = False, **params):
+        
+        fitdf = self.dftr if split else self.df
         country_hols = params.pop('add_country_holidays')
         regressors = params.pop('regressors') if 'regressors' in params else None
         model = Prophet(**params)
-        self.df['y'] = self.df[y]
-        self.df['ds'] = self.df[ds]
+        fitdf['y'] = fitdf[y]
+        fitdf['ds'] = fitdf[ds]
         if country_hols:
             model.add_country_holidays(country_name=country_hols)
         if regressors:
             for r in regressors:
                 model.add_regressor(r)
-        model.fit(self.df)
+        model.fit(fitdf)
         return(model)
     
     def forecast_Prophet(self, model, periods):
