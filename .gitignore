@@ -13,6 +13,7 @@ token.pickle
 *.pdf
 *.rds
 .DS_Store
+*.csv.zip
 data/
 
 # jupyter
