@@ -1,6 +1,6 @@
 scikit-learn==0.22.2
 ipykernel==4.9.0
-ipython==6.5.0
+ipython==7.16.3
 pandas==0.25.3
 pandas-profiling==2.5.0
 jupyter==1.0.0
